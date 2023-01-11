@@ -1,0 +1,40 @@
+version: "3"
+services:
+
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - ${FRONTEND_PORT}:3000
+    networks:
+      - mern-network
+    volumes:
+      - ./client/src:/usr/app/src
+      - ./client/public:/usr/app/public
+    depends_on:
+      - server
+    environment:
+      - REACT_APP_SERVER=http://localhost:${BACKEND_PORT}
+    command: npm start
+    stdin_open: true
+    tty: true
+  
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - ${BACKEND_PORT}:6942
+    networks:
+      - mern-network
+    volumes:
+      - ./server/db:/usr/app/db
+      - ./server/routes:/usr/app/routes
+    environment:
+      - CLIENT=http://localhost:${FRONTEND_PORT}
+    command: node server.js
+
+networks:
+  mern-network:
+    driver: bridge
